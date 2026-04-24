@@ -2,11 +2,12 @@ import React, { useRef } from 'react';
 
 // Categories mapping to visual bubbles
 export const PULSE_ITEMS = [
-  { id: 'all', label: 'All Grid', icon: '✨', color: 'from-gray-100 to-white', border: 'border-gray-300' },
-  { id: 'events', label: 'Live Events', icon: '🔴', color: 'from-secondary-coral/20 to-white', border: 'border-secondary-coral/50' },
-  { id: 'announcements', label: 'Alerts', icon: '📢', color: 'from-blue-400/20 to-white', border: 'border-blue-400/50' },
-  { id: 'trending', label: 'Trending', icon: '🔥', color: 'from-orange-400/20 to-white', border: 'border-orange-400/50' },
-  { id: 'clubs', label: 'Active Clubs', icon: '👥', color: 'from-purple-400/20 to-white', border: 'border-purple-400/50' },
+  { id: 'all',       label: 'All',       icon: '✨', color: 'from-gray-100 to-white',             border: 'border-gray-300' },
+  { id: 'following', label: 'Following', icon: '💫', color: 'from-primary-teal/20 to-white',       border: 'border-primary-teal/50' },
+  { id: 'events',    label: 'Events',    icon: '🔴', color: 'from-secondary-coral/20 to-white',    border: 'border-secondary-coral/50' },
+  { id: 'announcements', label: 'Alerts', icon: '📢', color: 'from-blue-400/20 to-white',          border: 'border-blue-400/50' },
+  { id: 'trending',  label: 'Trending',  icon: '🔥', color: 'from-orange-400/20 to-white',         border: 'border-orange-400/50' },
+  { id: 'clubs',     label: 'Clubs',     icon: '👥', color: 'from-purple-400/20 to-white',         border: 'border-purple-400/50' },
 ];
 
 interface CampusPulseProps {

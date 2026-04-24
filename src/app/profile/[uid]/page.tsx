@@ -11,7 +11,8 @@ import { AvatarDisplay } from '@/components/ui/AvatarDisplay';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { useAuth } from '@/context/AuthContext';
 import Link from 'next/link';
-import { MessageCircle, ArrowLeft, Briefcase, Users, MapPin } from 'lucide-react';
+import { MessageCircle, ArrowLeft, Briefcase, MapPin } from 'lucide-react';
+import { useFollow } from '@/hooks/useFollow';
 
 export default function PublicProfilePage() {
   const { uid } = useParams<{ uid: string }>();
@@ -23,6 +24,8 @@ export default function PublicProfilePage() {
   const [teamPosts, setTeamPosts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
+
+  const { isFollowing, followersCount, toggleFollow, loading: followLoading } = useFollow(uid as string);
 
   // Redirect to /profile if viewing own profile
   useEffect(() => {
@@ -148,6 +151,11 @@ export default function PublicProfilePage() {
             </div>
             <div className="w-px h-8 bg-primary-teal/10" />
             <div className="text-center">
+              <div className="text-xl font-black text-text-charcoal">{followersCount}</div>
+              <div className="text-[9px] font-bold text-text-gray uppercase tracking-widest">Followers</div>
+            </div>
+            <div className="w-px h-8 bg-primary-teal/10" />
+            <div className="text-center">
               <div className="text-xl font-black text-text-charcoal">{teamPosts.length}</div>
               <div className="text-[9px] font-bold text-text-gray uppercase tracking-widest">Team Posts</div>
             </div>
@@ -155,10 +163,22 @@ export default function PublicProfilePage() {
 
           {/* Actions */}
           {user && (
-            <div className="flex items-center justify-center md:justify-start gap-3 pt-2">
+            <div className="flex items-center justify-center md:justify-start gap-3 pt-2 flex-wrap">
+              {/* Follow / Unfollow */}
+              <button
+                onClick={toggleFollow}
+                disabled={followLoading}
+                className={`inline-flex items-center gap-2 px-6 py-2.5 rounded-full text-[10px] font-black uppercase tracking-widest transition-all disabled:opacity-50 ${
+                  isFollowing
+                    ? 'bg-background-neutral border border-primary-teal/20 text-text-charcoal hover:bg-secondary-coral/10 hover:text-secondary-coral hover:border-secondary-coral/20'
+                    : 'bg-primary-teal text-white shadow-[0_8px_20px_rgba(0,194,203,0.3)] hover:brightness-110 hover:-translate-y-0.5'
+                }`}
+              >
+                {followLoading ? '...' : isFollowing ? '✓ Following' : '+ Follow'}
+              </button>
               <Link
                 href={`/chat?user=${uid}&name=${encodeURIComponent(profileUser?.name || 'User')}`}
-                className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-primary-teal text-white text-[10px] font-black uppercase tracking-widest hover:brightness-110 transition-all shadow-[0_8px_20px_rgba(0,194,203,0.3)] hover:-translate-y-0.5"
+                className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-white border border-primary-teal/15 text-text-charcoal text-[10px] font-black uppercase tracking-widest hover:border-primary-teal/30 transition-all shadow-sm"
               >
                 <MessageCircle size={14} />
                 Message

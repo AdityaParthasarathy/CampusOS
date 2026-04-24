@@ -15,24 +15,26 @@ import { GlassInput } from '@/components/ui/GlassInput';
 import { GlassTextArea } from '@/components/ui/GlassTextArea';
 import { useAuth } from '@/context/AuthContext';
 import { db, sanitizeData } from '@/lib/firebase';
-import { 
-  collection, 
-  query, 
-  where, 
-  onSnapshot, 
-  doc, 
-  updateDoc 
+import {
+  collection,
+  query,
+  where,
+  onSnapshot,
+  doc,
+  updateDoc
 } from 'firebase/firestore';
 import { useRouter } from 'next/navigation';
 import { AvatarBuilder } from '@/components/ui/AvatarBuilder';
 import { AvatarDisplay } from '@/components/ui/AvatarDisplay';
+import { useFollowCounts } from '@/hooks/useFollow';
 
 export default function ProfilePage() {
   const { user, userData, loading: authLoading, logout } = useAuth();
   const router = useRouter();
-  
+
   const [userProjects, setUserProjects] = useState<any[]>([]);
   const [userPosts, setUserPosts] = useState<any[]>([]);
+  const { followers, following } = useFollowCounts(user?.uid || '');
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isAvatarModalOpen, setIsAvatarModalOpen] = useState(false);
   
@@ -163,7 +165,7 @@ export default function ProfilePage() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-3 gap-4 mb-12 border-y border-primary-teal/5 py-8">
+      <div className="grid grid-cols-4 gap-4 mb-12 border-y border-primary-teal/5 py-8">
         <div className="text-center">
           <div className="text-2xl font-black text-text-charcoal">{userProjects.length}</div>
           <div className="text-[10px] font-bold text-text-gray uppercase tracking-widest">Projects</div>
@@ -173,8 +175,12 @@ export default function ProfilePage() {
           <div className="text-[10px] font-bold text-text-gray uppercase tracking-widest">Posts</div>
         </div>
         <div className="text-center">
-          <div className="text-2xl font-black text-text-charcoal">0</div>
+          <div className="text-2xl font-black text-text-charcoal">{followers}</div>
           <div className="text-[10px] font-bold text-text-gray uppercase tracking-widest">Followers</div>
+        </div>
+        <div className="text-center">
+          <div className="text-2xl font-black text-text-charcoal">{following}</div>
+          <div className="text-[10px] font-bold text-text-gray uppercase tracking-widest">Following</div>
         </div>
       </div>
 

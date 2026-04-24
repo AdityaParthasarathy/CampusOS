@@ -9,13 +9,14 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, Lightbulb, Calendar, Users, ShoppingBag, MapPin, MessageCircle, Search, Settings } from 'lucide-react';
+import { Home, Lightbulb, Calendar, Users, ShoppingBag, MapPin, MessageCircle, Search, Settings, UserPlus } from 'lucide-react';
 
 export const Sidebar = () => {
   const pathname = usePathname();
 
   const navLinks = [
     { name: 'Feed',     href: '/campus-feed',  icon: Home },
+    { name: 'People',   href: '/people',        icon: UserPlus },
     { name: 'Map',      href: '/map',           icon: MapPin },
     { name: 'Events',   href: '/events',        icon: Calendar },
     { name: 'Projects', href: '/projects',      icon: Lightbulb },

@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, MessageCircle, Settings, Search } from 'lucide-react';
+import { Home, MessageCircle, Search, UserPlus } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { AvatarDisplay } from '@/components/ui/AvatarDisplay';
 
@@ -12,10 +12,10 @@ export const BottomNavbar: React.FC = () => {
   const { user, userData } = useAuth();
 
   const navItems = [
-    { icon: Home,          label: 'Feed',     href: '/campus-feed', badge: 0 },
-    { icon: MessageCircle, label: 'Chat',     href: '/chat',        badge: 0 },
-    { icon: Search,        label: 'Search',   href: '/search',      badge: 0 },
-    { icon: Settings,      label: 'Settings', href: '/settings',    badge: 0 },
+    { icon: Home,          label: 'Feed',    href: '/campus-feed', badge: 0 },
+    { icon: UserPlus,      label: 'People',  href: '/people',      badge: 0 },
+    { icon: Search,        label: 'Search',  href: '/search',      badge: 0 },
+    { icon: MessageCircle, label: 'Chat',    href: '/chat',        badge: 0 },
   ];
 
   const isActive = (href: string) => pathname === href;

@@ -17,10 +17,12 @@ import { useAuth } from '@/context/AuthContext';
 import { db, sanitizeData } from '@/lib/firebase';
 import { collection, addDoc, onSnapshot, query, orderBy, updateDoc, doc, deleteDoc, serverTimestamp } from 'firebase/firestore';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 import { CampusPulse } from '@/components/ui/CampusPulse';
 import { PostCard } from '@/components/ui/PostCard';
 import { ImageUpload } from '@/components/ui/ImageUpload';
+import { useFollowingIds } from '@/hooks/useFollow';
 
 export default function CampusFeedPage() {
   const { user, userData } = useAuth();
@@ -32,6 +34,7 @@ export default function CampusFeedPage() {
   const [formData, setFormData] = useState({ content: '', category: 'General', type: 'general', location: '', imageUrl: '' });
 
   const [activePulse, setActivePulse] = useState('all');
+  const followingIds = useFollowingIds(user?.uid || '');
 
   // Load from LocalStorage on mount
   useEffect(() => {
@@ -196,8 +199,11 @@ export default function CampusFeedPage() {
   const getDisplayedPosts = () => {
     // Map existing posts to ensure backward compatibility (default 'general')
     let result = posts.map(p => ({ ...p, type: p.type || 'general' }));
-    
+
     switch (activePulse) {
+      case 'following':
+        result = result.filter(p => followingIds.includes(p.authorId));
+        break;
       case 'events':
         result = result.filter(p => p.type === 'event' || ['Club Event', 'Workshop', 'Initiative'].includes(p.category));
         break;
@@ -212,7 +218,7 @@ export default function CampusFeedPage() {
         result = result.filter(p => p.category === 'Club Event');
         break;
     }
-    
+
     return result;
   };
 
@@ -268,13 +274,29 @@ export default function CampusFeedPage() {
             </div>
           ) : (
             <div className="py-24 text-center bg-white/60 backdrop-blur-md rounded-[3rem] border-2 border-dashed border-primary-teal/10 mx-4 shadow-sm">
-               <div className="text-6xl mb-6">{activePulse === 'events' ? '📅' : activePulse === 'announcements' ? '📢' : '✨'}</div>
+               <div className="text-6xl mb-6">
+                 {activePulse === 'following' ? '💫' : activePulse === 'events' ? '📅' : activePulse === 'announcements' ? '📢' : '✨'}
+               </div>
                <h3 className="text-2xl font-black text-text-charcoal font-heading tracking-tight">
-                 {activePulse === 'events' ? 'No live events right now' : activePulse === 'announcements' ? 'No announcements right now' : 'The feed is fresh...'}
+                 {activePulse === 'following' ? 'Nothing from your crew yet' : activePulse === 'events' ? 'No live events right now' : activePulse === 'announcements' ? 'No announcements right now' : 'The feed is fresh...'}
                </h3>
-               <p className="text-text-gray font-bold uppercase tracking-widest text-[10px] mt-2">
-                 {activePulse === 'events' ? 'Check back later or host one yourself!' : activePulse === 'announcements' ? 'Stay tuned for campus-wide updates!' : 'Be the trendsetter and post first!'}
+               <p className="text-text-gray font-bold uppercase tracking-widest text-[10px] mt-2 px-8">
+                 {activePulse === 'following'
+                   ? 'Follow some students to see their posts here'
+                   : activePulse === 'events'
+                   ? 'Check back later or host one yourself!'
+                   : activePulse === 'announcements'
+                   ? 'Stay tuned for campus-wide updates!'
+                   : 'Be the trendsetter and post first!'}
                </p>
+               {activePulse === 'following' && (
+                 <Link
+                   href="/people"
+                   className="inline-block mt-6 px-8 py-3 rounded-full bg-primary-teal text-white text-[10px] font-black uppercase tracking-widest shadow-[0_8px_20px_rgba(0,194,203,0.3)] hover:brightness-110 transition-all"
+                 >
+                   Discover People →
+                 </Link>
+               )}
             </div>
           )}
         </div>
