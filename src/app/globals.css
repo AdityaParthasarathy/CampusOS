@@ -3,7 +3,7 @@
 @theme {
   --color-primary-teal: #00C2CB;
   --color-secondary-coral: #FF6B6B;
-  --color-background-neutral: #F7F9FC;
+  --color-background-neutral: #FFF8F0;
   --color-card-white: #FFFFFF;
   --color-text-charcoal: #1F1F1F;
   --color-text-gray: #6C6C6C;
@@ -152,6 +152,9 @@
   background: var(--color-primary-teal);
 }
 
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
 /* Sidebar Utilities */
 .sidebar-item-active {
   background-color: var(--color-primary-teal);
@@ -166,3 +169,91 @@
     background-color: rgba(0, 194, 203, 0.05);
   }
 }
+
+/* ── Dark Mode ──────────────────────────────────────────────────────────── */
+
+/* Override semantic tokens */
+.dark {
+  color-scheme: dark;
+  --color-background-neutral: #0B0F1A;
+  --color-card-white:         #161B2E;
+  --color-text-charcoal:      #E2E8F0;
+  --color-text-gray:          #7C8DB0;
+  --color-primary-teal:       #00D4DD;
+  --color-secondary-coral:    #FF7575;
+}
+
+/* Page background */
+.dark body,
+.dark .bg-background-neutral {
+  background-color: #0B0F1A !important;
+}
+
+/* Cream page fill (layout fixed divs) */
+.dark .bg-page-fill {
+  background-color: #0B0F1A !important;
+}
+
+/* Solid white → dark card */
+.dark .bg-white { background-color: #161B2E !important; }
+
+/* Translucent whites → dark glass */
+.dark .bg-white\/95 { background-color: rgba(22,27,46,0.95) !important; }
+.dark .bg-white\/90 { background-color: rgba(22,27,46,0.90) !important; }
+.dark .bg-white\/85 { background-color: rgba(22,27,46,0.85) !important; }
+.dark .bg-white\/80 { background-color: rgba(22,27,46,0.80) !important; }
+.dark .bg-white\/70 { background-color: rgba(22,27,46,0.70) !important; }
+.dark .bg-white\/50 { background-color: rgba(22,27,46,0.50) !important; }
+.dark .bg-white\/40 { background-color: rgba(22,27,46,0.40) !important; }
+.dark .bg-white\/30 { background-color: rgba(22,27,46,0.30) !important; }
+
+/* Background neutral variations */
+.dark .bg-background-neutral { background-color: #0B0F1A !important; }
+.dark .hover\:bg-background-neutral:hover { background-color: #1E2540 !important; }
+
+/* Cards elevated layer */
+.dark .floating-card { background: #161B2E !important; border-color: rgba(255,255,255,0.06) !important; }
+
+/* Glass nav (bottom bar) */
+.dark .glass-nav {
+  background: rgba(14,18,32,0.92) !important;
+  border-top-color: rgba(0,212,221,0.12) !important;
+}
+
+/* Sidebar */
+.dark .sidebar-item-inactive {
+  background-color: rgba(255,255,255,0.04) !important;
+  border-color: rgba(255,255,255,0.06) !important;
+}
+
+/* White borders */
+.dark .border-white\/50,
+.dark .border-white\/40,
+.dark .border-white\/30,
+.dark .border-white\/20 { border-color: rgba(255,255,255,0.08) !important; }
+
+/* Text inputs */
+.dark input:not([type="radio"]):not([type="checkbox"]):not([type="range"]),
+.dark textarea,
+.dark select {
+  background-color: #1E2540 !important;
+  color: #E2E8F0 !important;
+  border-color: rgba(0,212,221,0.2) !important;
+}
+
+.dark input::placeholder,
+.dark textarea::placeholder { color: #7C8DB0 !important; }
+
+/* Glow orbs (layout) - dim in dark */
+.dark .glow-orb { opacity: 0.04 !important; }
+
+/* Shadows lighten */
+.dark [class*="shadow-"] { --tw-shadow-color: rgba(0,0,0,0.4); }
+
+/* Scrollbar */
+.dark .custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(0,212,221,0.25);
+}
+
+/* Rounded panels used throughout */
+.dark [class*="rounded-"][class*="bg-white"] { background-color: #161B2E !important; }

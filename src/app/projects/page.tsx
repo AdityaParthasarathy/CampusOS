@@ -13,8 +13,10 @@ import { PrimaryButton } from '@/components/ui/PrimaryButton';
 import { GlassModal } from '@/components/ui/GlassModal';
 import { GlassInput } from '@/components/ui/GlassInput';
 import { GlassTextArea } from '@/components/ui/GlassTextArea';
+import { ImageUpload } from '@/components/ui/ImageUpload';
 import { useAuth } from '@/context/AuthContext';
 import { db, sanitizeData } from '@/lib/firebase';
+import Link from 'next/link';
 import { 
   collection, 
   onSnapshot, 
@@ -91,7 +93,8 @@ export default function ProjectsPage() {
   const [formData, setFormData] = useState({
     title: '',
     desc: '',
-    stack: ''
+    stack: '',
+    imageUrl: ''
   });
 
   useEffect(() => {
@@ -150,7 +153,7 @@ export default function ProjectsPage() {
       }
       setIsModalOpen(false);
       setEditingId(null);
-      setFormData({ title: '', desc: '', stack: '' });
+      setFormData({ title: '', desc: '', stack: '', imageUrl: '' });
     } catch (error) {
       console.error("Error saving project:", error);
       alert("Failed to save project.");
@@ -162,7 +165,8 @@ export default function ProjectsPage() {
     setFormData({
       title: project.title,
       desc: project.desc,
-      stack: project.stack?.join(', ') || ''
+      stack: project.stack?.join(', ') || '',
+      imageUrl: project.imageUrl || ''
     });
     setIsModalOpen(true);
   };
@@ -229,7 +233,14 @@ export default function ProjectsPage() {
             <p className="text-[10px] font-black text-text-gray tracking-[0.3em] uppercase animate-pulse">Syncing with campus data...</p>
           </div>
         ) : projects.length > 0 ? projects.map((project) => (
-          <GlassCard key={project.id} className="group border-white hover:border-primary-teal/30 bg-white hover:scale-[1.03] transition-all duration-700 flex flex-col h-full relative overflow-hidden shadow-[0_15px_45px_rgba(0,0,0,0.05)] hover:shadow-[0_30px_80px_rgba(0,194,203,0.12)]">
+          <GlassCard key={project.id} className="group border-white hover:border-primary-teal/30 bg-white hover:scale-[1.03] transition-all duration-700 flex flex-col h-full relative overflow-hidden shadow-[0_15px_45px_rgba(0,0,0,0.05)] hover:shadow-[0_30px_80px_rgba(0,194,203,0.12)] !p-0">
+            {project.imageUrl && (
+              <div className="w-full h-44 overflow-hidden relative shrink-0">
+                <img src={project.imageUrl} alt={project.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                <div className="absolute inset-0 bg-gradient-to-t from-white/60 to-transparent" />
+              </div>
+            )}
+            <div className="p-8 flex flex-col flex-1">
             <div className="flex justify-between items-start mb-8">
               <span className={`text-[10px] font-black tracking-[0.2em] uppercase px-5 py-2 rounded-full border shadow-sm transition-all ${
                 project.status === 'Active' ? 'bg-primary-teal text-white border-primary-teal' : 
@@ -275,16 +286,27 @@ export default function ProjectsPage() {
               </div>
               
               <div className="flex justify-between items-center">
-                <div className="flex -space-x-3">
-                  {project.members?.slice(0, 3).map((m: string, idx: number) => (
-                    <div key={idx} className="w-10 h-10 rounded-full bg-white border-2 border-primary-teal/10 flex items-center justify-center text-[10px] font-black text-text-charcoal shadow-md ring-2 ring-white">
-                      {m?.[0] || '?'}
-                    </div>
-                  ))}
-                  {project.members && project.members.length > 3 && (
-                    <div className="w-10 h-10 rounded-full bg-background-neutral border-2 border-white flex items-center justify-center text-[10px] font-black text-primary-teal shadow-md ring-2 ring-white">
-                      +{project.members.length - 3}
-                    </div>
+                <div className="flex items-center gap-3">
+                  <div className="flex -space-x-3">
+                    {project.members?.slice(0, 3).map((m: string, idx: number) => (
+                      <div key={idx} className="w-10 h-10 rounded-full bg-white border-2 border-primary-teal/10 flex items-center justify-center text-[10px] font-black text-text-charcoal shadow-md ring-2 ring-white">
+                        {m?.[0] || '?'}
+                      </div>
+                    ))}
+                    {project.members && project.members.length > 3 && (
+                      <div className="w-10 h-10 rounded-full bg-background-neutral border-2 border-white flex items-center justify-center text-[10px] font-black text-primary-teal shadow-md ring-2 ring-white">
+                        +{project.members.length - 3}
+                      </div>
+                    )}
+                  </div>
+                  {project.creatorId && !project.id.startsWith('demo-') && (
+                    <Link
+                      href={`/profile/${project.creatorId}`}
+                      className="text-[9px] font-black text-text-gray uppercase tracking-widest hover:text-primary-teal transition-colors"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      by {project.creatorName}
+                    </Link>
                   )}
                 </div>
                 
@@ -299,6 +321,7 @@ export default function ProjectsPage() {
                   </button>
                 )}
               </div>
+            </div>
             </div>
           </GlassCard>
         )) : (
@@ -315,7 +338,7 @@ export default function ProjectsPage() {
         onClose={() => {
           setIsModalOpen(false);
           setEditingId(null);
-          setFormData({ title: '', desc: '', stack: '' });
+          setFormData({ title: '', desc: '', stack: '', imageUrl: '' });
         }} 
         title={editingId ? "Edit Project" : "Launch Your Build"}
       >
@@ -334,12 +357,16 @@ export default function ProjectsPage() {
             onChange={(e) => setFormData({...formData, desc: e.target.value})}
             required
           />
-          <GlassInput 
+          <GlassInput
             label="Tech Stack (comma separated)"
             placeholder="Next.js, Tailwind, AI"
             value={formData.stack}
             onChange={(e) => setFormData({...formData, stack: e.target.value})}
             required
+          />
+          <ImageUpload
+            value={formData.imageUrl}
+            onChange={(url) => setFormData({...formData, imageUrl: url})}
           />
           <div className="flex justify-end gap-4 pt-6 mt-4">
              <button 

@@ -96,6 +96,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               };
               await setDoc(userRef, sanitizeData(initialData));
             }
+          }, (error) => {
+            if (error.code !== 'permission-denied') console.error('❌ [AuthContext] User snapshot error:', error);
           });
         } catch (err) {
           console.error("❌ [AuthContext] Firestore user fetch error:", err);

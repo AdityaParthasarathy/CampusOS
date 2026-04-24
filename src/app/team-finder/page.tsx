@@ -85,6 +85,8 @@ const TeamPostCard = ({ post, user, userData, handleEdit, handleDelete }: any) =
     const q = query(collection(db, `team_posts/${post.id}/requests`), orderBy("createdAt", "desc"));
     const unsubscribe = onSnapshot(q, (snapshot) => {
       setRequests(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+    }, (error) => {
+      if (error.code !== 'permission-denied') console.error('Requests snapshot error:', error);
     });
     return () => unsubscribe();
   }, [post.id]);
@@ -107,13 +109,16 @@ const TeamPostCard = ({ post, user, userData, handleEdit, handleDelete }: any) =
 
       const targetId = post.posterId || post.creatorId;
       if (targetId && targetId !== user.uid) {
+         const senderPhoto = typeof userData?.avatar === 'string'
+           ? userData.avatar
+           : user.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.uid}`;
          await addDoc(collection(db, `users/${targetId}/notifications`), sanitizeData({
            type: 'request',
            message: `${userData?.name || user.displayName || 'Someone'} requested to join your team for "${post.role}"`,
            relatedId: post.id,
            senderId: user.uid,
            senderName: userData?.name || user.displayName || "Anonymous",
-           senderPhotoURL: userData?.avatar || user.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.uid}`,
+           senderPhotoURL: senderPhoto,
            isRead: false,
            createdAt: serverTimestamp()
          }));
@@ -134,13 +139,16 @@ const TeamPostCard = ({ post, user, userData, handleEdit, handleDelete }: any) =
         await updateDoc(doc(db, "team_posts", post.id), sanitizeData({
           members: arrayUnion({ uid: requesterId })
         }));
+        const ownerPhoto = typeof userData?.avatar === 'string'
+          ? userData.avatar
+          : user.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.uid || '1'}`;
         await addDoc(collection(db, `users/${requesterId}/notifications`), sanitizeData({
            type: 'accepted',
            message: `Your request for "${post.role}" was accepted by ${userData?.name || user.displayName || 'the owner'}!`,
            relatedId: post.id,
            senderId: user?.uid || "system",
            senderName: userData?.name || user.displayName || "Team Owner",
-           senderPhotoURL: userData?.avatar || user.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.uid || '1'}`,
+           senderPhotoURL: ownerPhoto,
            isRead: false,
            createdAt: serverTimestamp()
         }));

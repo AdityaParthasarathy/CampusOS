@@ -57,12 +57,16 @@ export default function ProfilePage() {
     const projectsQuery = query(collection(db!, "projects"), where("creatorId", "==", user.uid));
     const unsubProjects = onSnapshot(projectsQuery, (snap) => {
       setUserProjects(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+    }, (error) => {
+      if (error.code !== 'permission-denied') console.error('Projects snapshot error:', error);
     });
 
     // Fetch User's Created Team Posts
     const postsQuery = query(collection(db!, "team_posts"), where("posterId", "==", user.uid));
     const unsubPosts = onSnapshot(postsQuery, (snap) => {
       setUserPosts(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+    }, (error) => {
+      if (error.code !== 'permission-denied') console.error('Team posts snapshot error:', error);
     });
 
     // Initialize Edit Data

@@ -3,27 +3,28 @@
 import React, { useState, useEffect } from 'react';
 import { Heart, MessageCircle, Send, Bookmark, MoreHorizontal } from 'lucide-react';
 import { db, sanitizeData } from '@/lib/firebase';
-import { 
-  collection, 
-  addDoc, 
-  onSnapshot, 
-  query, 
-  orderBy, 
-  serverTimestamp 
+import {
+  collection,
+  addDoc,
+  onSnapshot,
+  query,
+  orderBy,
+  serverTimestamp
 } from 'firebase/firestore';
 import { useAuth } from '@/context/AuthContext';
 import { useUser } from '@/hooks/useUser';
 import { AvatarDisplay } from './AvatarDisplay';
+import Link from 'next/link';
 
 const CommentItem = ({ comment }: { comment: any }) => {
   const authorProfile = useUser(comment.authorId);
   return (
     <div className="flex gap-2 text-sm items-start animate-fade-in">
-      <div className="w-6 h-6 rounded-full overflow-hidden border border-primary-teal/10 shrink-0">
+      <Link href={comment.authorId ? `/profile/${comment.authorId}` : '#'} className="w-6 h-6 rounded-full overflow-hidden border border-primary-teal/10 shrink-0 hover:ring-2 hover:ring-primary-teal/30 transition-all">
         <AvatarDisplay avatar={authorProfile?.avatar} fallbackSeed={comment.authorId} className="w-full h-full !border-none !rounded-none" />
-      </div>
+      </Link>
       <div className="flex-1">
-        <span className="font-black mr-2 text-text-charcoal">{authorProfile?.name || comment.author}</span>
+        <Link href={comment.authorId ? `/profile/${comment.authorId}` : '#'} className="font-black mr-2 text-text-charcoal hover:text-primary-teal transition-colors">{authorProfile?.name || comment.author}</Link>
         <span className="text-text-charcoal font-medium leading-snug">{comment.text}</span>
         <div className="text-[10px] text-text-gray font-bold mt-1 uppercase tracking-tighter">
           {comment.createdAt?.seconds 
@@ -76,6 +77,8 @@ export const PostCard: React.FC<PostCardProps> = ({ post, onReaction, user, onDe
         ...doc.data()
       }));
       setComments(fetchedComments);
+    }, (error) => {
+      if (error.code !== 'permission-denied') console.error('Comments snapshot error:', error);
     });
 
     return () => unsubscribe();
@@ -141,17 +144,21 @@ export const PostCard: React.FC<PostCardProps> = ({ post, onReaction, user, onDe
     >
       {/* Header */}
       <div className="p-4 flex items-center justify-between border-b border-primary-teal/5">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full ring-2 ring-primary-teal/20 shadow-sm relative">
+        <Link
+          href={post.authorId ? `/profile/${post.authorId}` : '#'}
+          className="flex items-center gap-3 group/author"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="w-10 h-10 rounded-full ring-2 ring-primary-teal/20 shadow-sm relative group-hover/author:ring-primary-teal/40 transition-all">
             <div className="w-full h-full rounded-full border-2 border-white flex overflow-hidden bg-white shadow-inner">
               <AvatarDisplay avatar={authorProfile?.avatar} fallbackSeed={post.authorId} className="w-full h-full !rounded-none !border-none" />
             </div>
           </div>
           <div className="flex flex-col">
-            <span className="text-sm font-black text-text-charcoal font-heading leading-tight flex items-center gap-1">{authorProfile?.name || post.author}</span>
+            <span className="text-sm font-black text-text-charcoal group-hover/author:text-primary-teal transition-colors font-heading leading-tight flex items-center gap-1">{authorProfile?.name || post.author}</span>
             <span className="text-[10px] text-text-gray font-bold uppercase tracking-widest">{post.category} • {post.createdAt ? new Date(post.createdAt).toLocaleDateString() : 'Just now'}</span>
           </div>
-        </div>
+        </Link>
         {isAuthor && (
           <div className="relative">
             <button 
@@ -199,8 +206,8 @@ export const PostCard: React.FC<PostCardProps> = ({ post, onReaction, user, onDe
 
       {/* Media/Content Area */}
       <div className="relative aspect-square w-full bg-[#f8fafc] flex items-center justify-center p-8 text-center overflow-hidden border-b border-primary-teal/5">
-        {post.image ? (
-          <img src={post.image} alt="post content" className="object-cover w-full h-full absolute inset-0 transition-transform duration-700 group-hover:scale-105" />
+        {(post.imageUrl || post.image) ? (
+          <img src={post.imageUrl || post.image} alt="post content" className="object-cover w-full h-full absolute inset-0 transition-transform duration-700 group-hover:scale-105" />
         ) : (
           <div className="max-w-xs">
             <p className="text-xl font-bold text-text-charcoal leading-relaxed italic">
@@ -291,7 +298,7 @@ export const PostCard: React.FC<PostCardProps> = ({ post, onReaction, user, onDe
         <div className="text-sm">
           <span className="font-black mr-2 text-text-charcoal">{post.author}</span>
           <span className="text-text-charcoal font-medium leading-snug">
-            {post.image ? post.content : post.category}
+            {(post.imageUrl || post.image) ? post.content : post.category}
           </span>
         </div>
 

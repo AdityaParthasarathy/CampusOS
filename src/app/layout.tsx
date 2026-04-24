@@ -10,6 +10,7 @@ import "./globals.css";
 import { FloatingNavbar } from "@/components/layout/FloatingNavbar";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { AuthProvider } from "@/context/AuthContext";
+import { ThemeProvider } from "@/context/ThemeContext";
 
 const poppins = Poppins({
   weight: ['400', '600', '800', '900'],
@@ -35,24 +36,40 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="bg-background-cream text-text-charcoal scroll-smooth">
-      <body className={`${inter.variable} ${poppins.variable} font-sans antialiased selection:bg-primary-teal/30 bg-[#FFF8F0]`}>
-        <AuthProvider>
-          <div className="fixed inset-0 bg-[#FFF8F0] -z-20" />
-          <div className="fixed top-0 left-1/4 w-[500px] h-[500px] bg-primary-teal/5 blur-[120px] rounded-full -z-10 animate-pulse" />
-          <div className="fixed bottom-0 right-1/4 w-[400px] h-[400px] bg-secondary-coral/5 blur-[100px] rounded-full -z-10" />
-          
-          <div className="hidden md:block">
-            <FloatingNavbar />
-            <Sidebar />
-          </div>
-          
-          <main className="pb-24 pt-20 md:pt-32 md:pb-0 md:pl-28 transition-all duration-300 max-w-7xl mx-auto">
-            {children}
-          </main>
+    <html lang="en" className="scroll-smooth" suppressHydrationWarning>
+      <head>
+        {/* Anti-FOUC: apply dark class before React hydrates */}
+        <script dangerouslySetInnerHTML={{ __html: `
+          try {
+            var t = localStorage.getItem('campus-theme');
+            var sys = window.matchMedia('(prefers-color-scheme:dark)').matches;
+            if (t === 'dark' || (!t || t === 'system') && sys) {
+              document.documentElement.classList.add('dark');
+            }
+          } catch(e) {}
+        `}} />
+      </head>
+      <body className={`${inter.variable} ${poppins.variable} font-sans antialiased selection:bg-primary-teal/30 bg-background-neutral transition-colors duration-300`}>
+        <ThemeProvider>
+          <AuthProvider>
+            {/* Page background fill */}
+            <div className="fixed inset-0 bg-background-neutral bg-page-fill -z-20 transition-colors duration-300" />
+            {/* Ambient glow orbs */}
+            <div className="glow-orb fixed top-0 left-1/4 w-[500px] h-[500px] bg-primary-teal/5 blur-[120px] rounded-full -z-10 animate-pulse transition-opacity duration-300" />
+            <div className="glow-orb fixed bottom-0 right-1/4 w-[400px] h-[400px] bg-secondary-coral/5 blur-[100px] rounded-full -z-10 transition-opacity duration-300" />
 
-          <BottomNavbar />
-        </AuthProvider>
+            <div className="hidden md:block">
+              <FloatingNavbar />
+              <Sidebar />
+            </div>
+
+            <main className="pb-24 pt-20 md:pt-32 md:pb-0 md:pl-28 transition-all duration-300 max-w-7xl mx-auto">
+              {children}
+            </main>
+
+            <BottomNavbar />
+          </AuthProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

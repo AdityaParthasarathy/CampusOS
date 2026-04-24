@@ -13,6 +13,7 @@ import { PrimaryButton } from '@/components/ui/PrimaryButton';
 import { GlassModal } from '@/components/ui/GlassModal';
 import { GlassInput } from '@/components/ui/GlassInput';
 import { GlassTextArea } from '@/components/ui/GlassTextArea';
+import { ImageUpload } from '@/components/ui/ImageUpload';
 import { useAuth } from '@/context/AuthContext';
 import { db, sanitizeData } from '@/lib/firebase';
 import { 
@@ -42,7 +43,8 @@ export default function EventsPage() {
     category: 'Hackathon',
     date: '',
     location: '',
-    desc: ''
+    desc: '',
+    imageUrl: ''
   });
 
   // Comments state mapped by event ID
@@ -68,6 +70,9 @@ export default function EventsPage() {
       }));
       setEvents(fetchedEvents);
       setLoading(false);
+    }, (error) => {
+      if (error.code !== 'permission-denied') console.error('Events snapshot error:', error);
+      setLoading(false);
     });
 
     return () => unsubscribe();
@@ -87,7 +92,7 @@ export default function EventsPage() {
           ...prev,
           [event.id]: snapshot.docs.map(d => ({ id: d.id, ...d.data() }))
         }));
-      });
+      }, (err) => { if (err.code !== 'permission-denied') console.error('Comments snapshot error:', err); });
       unsubscribes.push(unsubComments);
 
       // Likes Listener
@@ -105,7 +110,7 @@ export default function EventsPage() {
               [event.id]: hasLiked
            }));
         }
-      });
+      }, (err) => { if (err.code !== 'permission-denied') console.error('Likes snapshot error:', err); });
       unsubscribes.push(unsubLikes);
     });
 
@@ -133,7 +138,8 @@ export default function EventsPage() {
         category: 'Hackathon',
         date: '',
         location: '',
-        desc: ''
+        desc: '',
+        imageUrl: ''
       });
     } catch (error) {
       console.error("Error adding event: ", error);
@@ -279,6 +285,11 @@ export default function EventsPage() {
              {filteredEvents.map(event => (
                <GlassCard key={event.id} className="p-0 overflow-hidden group hover:scale-[1.03] transition-all duration-700 flex flex-col h-full bg-white border-white shadow-[0_15px_45px_rgba(0,0,0,0.05)] hover:shadow-[0_30px_70px_rgba(0,194,203,0.12)]">
                   <div className="w-full h-56 bg-gradient-to-br from-primary-teal/5 to-secondary-coral/5 relative overflow-hidden flex items-center justify-center">
+                     {event.imageUrl ? (
+                       <img src={event.imageUrl} alt={event.title} className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                     ) : (
+                       <div className="text-9xl opacity-10 group-hover:scale-125 group-hover:opacity-30 transition-all duration-1000 animate-float-card">🎉</div>
+                     )}
                      <div className="absolute top-5 left-5 z-10">
                         <span className="px-5 py-2 bg-white/95 backdrop-blur-xl text-[10px] font-black tracking-[0.2em] uppercase text-primary-teal rounded-full border border-primary-teal/10 shadow-sm transition-all group-hover:bg-primary-teal group-hover:text-white group-hover:border-primary-teal">
                           {event.category}
@@ -286,7 +297,7 @@ export default function EventsPage() {
                      </div>
                      {user && user.uid === event.creatorId && (
                        <div className="absolute top-5 right-5 z-10">
-                         <button 
+                         <button
                            onClick={() => handleDeleteEvent(event.id, event.creatorId)}
                            className="w-10 h-10 rounded-full bg-white/95 flex items-center justify-center text-secondary-coral hover:bg-secondary-coral hover:text-white transition-all shadow-md border border-secondary-coral/10"
                            title="Delete Event"
@@ -297,7 +308,6 @@ export default function EventsPage() {
                          </button>
                        </div>
                      )}
-                     <div className="text-9xl opacity-10 group-hover:scale-125 group-hover:opacity-30 transition-all duration-1000 animate-float-card">🎉</div>
                   </div>
 
                   <div className="p-8 space-y-8 flex-1 flex flex-col bg-white">
@@ -443,12 +453,16 @@ export default function EventsPage() {
                required
              />
           </div>
-          <GlassTextArea 
+          <GlassTextArea
             label="What's happening?"
             placeholder="Share the vibes..."
             value={formData.desc}
             onChange={(e) => setFormData({...formData, desc: e.target.value})}
             required
+          />
+          <ImageUpload
+            value={formData.imageUrl}
+            onChange={(url) => setFormData({...formData, imageUrl: url})}
           />
           <div className="flex justify-end gap-4 pt-6 mt-4">
              <button 

@@ -129,12 +129,14 @@ export default function MapPage() {
     // 3. Firestore Listeners
     if (db) {
       // Events Listener
-      const qEvents = query(collection(db, "feed"), where("type", "==", "event"));
+      const qEvents = query(collection(db, "events"));
       const unsubEvents = onSnapshot(qEvents, (snapshot) => {
         const liveEvents = snapshot.docs
           .map(doc => ({ id: doc.id, ...doc.data() }))
           .filter((ev: any) => ev.location && LOCATION_MAP[ev.location]);
         setEvents(liveEvents);
+      }, (error) => {
+        if (error.code !== 'permission-denied') console.error('Events map snapshot error:', error);
       });
 
       // Active Users Listener (last 2 minutes)
@@ -149,6 +151,8 @@ export default function MapPage() {
           .map(doc => ({ id: doc.id, ...doc.data() }))
           .filter((u: any) => u.uid !== currentUid && u.latitude && u.longitude);
         setActiveUsers(liveUsers);
+      }, (error) => {
+        if (error.code !== 'permission-denied') console.error('Active users snapshot error:', error);
       });
 
       return () => {
@@ -240,8 +244,9 @@ export default function MapPage() {
                     <span className="text-[8px] font-black uppercase tracking-[0.2em] bg-secondary-coral/10 text-secondary-coral px-3 py-1 rounded-full mb-2 inline-block">
                       Campus Event
                     </span>
-                    <h3 className="text-base font-black text-text-charcoal font-heading leading-tight mb-1">{event.content?.substring(0, 30)}...</h3>
-                    <p className="text-[10px] text-text-gray font-medium line-clamp-2 italic mb-2">"{event.category || 'General'}" at {event.location}</p>
+                    <h3 className="text-base font-black text-text-charcoal font-heading leading-tight mb-1">{event.title}</h3>
+                    <p className="text-[10px] text-text-gray font-medium line-clamp-2 italic mb-2">{event.desc}</p>
+                    <p className="text-[10px] text-text-gray font-medium italic mb-2">Location: {event.location}</p>
                     <div className="h-px w-full bg-gradient-to-r from-transparent via-secondary-coral/30 to-transparent my-2" />
                     <p className="text-[9px] font-black text-secondary-coral uppercase tracking-widest">Active Now</p>
                   </div>

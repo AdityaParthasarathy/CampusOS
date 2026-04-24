@@ -25,15 +25,16 @@ export default function Home() {
     if (!db) return;
 
     console.log("🔍 [Firestore] Subscribing to landing page stats. DB instance:", db);
+    const onErr = (err: any) => { if (err.code !== 'permission-denied') console.error('Stats snapshot error:', err); };
     const unsubProjects = onSnapshot(collection(db!, "projects"), (snap) => {
       setStats(prev => ({ ...prev, projects: snap.size }));
-    });
+    }, onErr);
     const unsubResources = onSnapshot(collection(db!, "resources"), (snap) => {
       setStats(prev => ({ ...prev, resources: snap.size }));
-    });
+    }, onErr);
     const unsubPosts = onSnapshot(collection(db!, "team_posts"), (snap) => {
       setStats(prev => ({ ...prev, posts: snap.size }));
-    });
+    }, onErr);
 
     return () => {
       unsubProjects();

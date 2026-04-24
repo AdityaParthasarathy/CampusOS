@@ -20,6 +20,7 @@ import { useRouter } from 'next/navigation';
 
 import { CampusPulse } from '@/components/ui/CampusPulse';
 import { PostCard } from '@/components/ui/PostCard';
+import { ImageUpload } from '@/components/ui/ImageUpload';
 
 export default function CampusFeedPage() {
   const { user, userData } = useAuth();
@@ -28,7 +29,7 @@ export default function CampusFeedPage() {
   const [localPosts, setLocalPosts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [formData, setFormData] = useState({ content: '', category: 'General', type: 'general', location: '', image: '' });
+  const [formData, setFormData] = useState({ content: '', category: 'General', type: 'general', location: '', imageUrl: '' });
 
   const [activePulse, setActivePulse] = useState('all');
 
@@ -63,6 +64,9 @@ export default function CampusFeedPage() {
       const merged = [...safeLocalPosts.filter(lp => !lp.hidden && !dbPosts.find(dp => dp.id === lp.id)), ...dbPosts];
       setPosts(merged.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()));
       setLoading(false);
+    }, (error) => {
+      if (error.code !== 'permission-denied') console.error('Feed snapshot error:', error);
+      setLoading(false);
     });
     return () => unsubscribe();
   }, [localPosts]);
@@ -81,7 +85,7 @@ export default function CampusFeedPage() {
       category: formData.category,
       type: formData.type,
       location: formData.type === 'event' ? formData.location : '',
-      image: formData.image,
+      imageUrl: formData.imageUrl,
       author: userData?.name || user?.displayName || "Campus Student",
       authorId: user?.uid || "anon",
       hypes: 0,
@@ -105,7 +109,7 @@ export default function CampusFeedPage() {
     }
 
     setIsModalOpen(false);
-    setFormData({ content: '', category: 'General', type: 'general', location: '', image: '' });
+    setFormData({ content: '', category: 'General', type: 'general', location: '', imageUrl: '' });
   };
 
   const handleReaction = async (postId: string, type: 'hype' | 'boost' | 'imIn') => {
@@ -289,24 +293,10 @@ export default function CampusFeedPage() {
             onChange={(e) => setFormData({...formData, content: e.target.value})}
             required
           />
-          <GlassInput 
-            label="Optional Image URL"
-            placeholder="https://images.unsplash.com/..."
-            value={formData.image}
-            onChange={(e) => setFormData({...formData, image: e.target.value})}
+          <ImageUpload
+            value={formData.imageUrl}
+            onChange={(url) => setFormData({ ...formData, imageUrl: url })}
           />
-          {formData.image && (
-            <div className="relative aspect-video rounded-2xl overflow-hidden border border-primary-teal/10 bg-black/5">
-              <img src={formData.image} alt="Preview" className="w-full h-full object-cover" />
-              <button 
-                type="button"
-                onClick={() => setFormData({...formData, image: ''})}
-                className="absolute top-2 right-2 p-2 bg-black/50 text-white rounded-full hover:bg-black/70 transition-all"
-              >
-                ✕
-              </button>
-            </div>
-          )}
           <div className="space-y-2">
             <label className="text-sm font-bold text-text-gray ml-1 uppercase tracking-wider">Post Type</label>
             <div className="flex gap-2">

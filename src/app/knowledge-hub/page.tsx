@@ -62,6 +62,9 @@ export default function KnowledgeHubPage() {
       }));
       setResources(resourcesData);
       setLoading(false);
+    }, (error) => {
+      if (error.code !== 'permission-denied') console.error('Resources snapshot error:', error);
+      setLoading(false);
     });
 
     return () => unsubscribe();

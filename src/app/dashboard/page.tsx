@@ -48,6 +48,7 @@ export default function DashboardPage() {
        return;
     }
 
+    const onErr = (err: any) => { if (err.code !== 'permission-denied') console.error('Dashboard snapshot error:', err); };
     const unsubscribes = collections.map(col => {
       console.log(`🔍 [Firestore] Subscribing to dashboard count: ${col}. DB instance:`, db);
       return onSnapshot(collection(db!, col), (snapshot) => {
@@ -55,7 +56,7 @@ export default function DashboardPage() {
           ...prev,
           [col === 'campus_updates' ? 'updates' : col === 'marketplace' ? 'market' : col]: snapshot.size + (demoCounts[col] || 0)
         }));
-      });
+      }, onErr);
     });
 
     // 2. Fetch Aggregated Recent Activity
@@ -66,7 +67,7 @@ export default function DashboardPage() {
           query(collection(db!, col), orderBy("createdAt", "desc"), limit(3))
         );
 
-        const unsubscribesActivities = activityQueries.map((q, idx) => 
+        const unsubscribesActivities = activityQueries.map((q, idx) =>
           onSnapshot(q, (snapshot) => {
              const colName = collections[idx];
              const items = snapshot.docs.map(doc => ({
@@ -74,7 +75,7 @@ export default function DashboardPage() {
                type: colName,
                ...doc.data()
              }));
-             
+
              setActivities(prev => {
                 const otherActivities = prev.filter(a => !a.id.startsWith('d-act-') && a.type !== colName);
                 const newActivities = [...otherActivities, ...items, ...DEMO_ACTIVITIES]
@@ -83,6 +84,9 @@ export default function DashboardPage() {
                 return newActivities;
              });
              setLoading(false);
+          }, (err) => {
+            if (err.code !== 'permission-denied') console.error('Activity snapshot error:', err);
+            setLoading(false);
           })
         );
         return () => unsubscribesActivities.forEach(un => un());

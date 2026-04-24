@@ -3,18 +3,19 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, MessageCircle, ShoppingBag, User, MapPin } from 'lucide-react';
+import { Home, MessageCircle, Settings, Search } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
+import { AvatarDisplay } from '@/components/ui/AvatarDisplay';
 
 export const BottomNavbar: React.FC = () => {
   const pathname = usePathname();
   const { user, userData } = useAuth();
 
   const navItems = [
-    { icon: Home, label: 'Feed', href: '/campus-feed' },
-    { icon: MessageCircle, label: 'Chat', href: '/chat', badge: 3 },
-    { icon: MapPin, label: 'Map', href: '/map' },
-    { icon: ShoppingBag, label: 'Market', href: '/marketplace' },
+    { icon: Home,          label: 'Feed',     href: '/campus-feed', badge: 0 },
+    { icon: MessageCircle, label: 'Chat',     href: '/chat',        badge: 0 },
+    { icon: Search,        label: 'Search',   href: '/search',      badge: 0 },
+    { icon: Settings,      label: 'Settings', href: '/settings',    badge: 0 },
   ];
 
   const isActive = (href: string) => pathname === href;
@@ -57,10 +58,10 @@ export const BottomNavbar: React.FC = () => {
         <div className={`w-7 h-7 rounded-full overflow-hidden border-2 transition-colors ${
           isActive('/profile') ? 'border-secondary-coral' : 'border-white/50 group-hover:border-primary-teal'
         } ${userData?.avatar ? 'ring-2 ring-primary-teal/20 ring-offset-1' : ''}`}>
-          <img 
-            src={userData?.avatar || user?.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.uid || 'default'}`} 
-            alt="Profile" 
-            className="w-full h-full object-cover"
+          <AvatarDisplay
+            avatar={userData?.avatar || user?.photoURL}
+            fallbackSeed={user?.uid || 'default'}
+            className="w-full h-full !rounded-none !border-none"
           />
         </div>
         <span className={`text-[10px] font-bold uppercase tracking-wider ${isActive('/profile') ? 'text-primary-teal' : 'text-text-gray'}`}>Me</span>
